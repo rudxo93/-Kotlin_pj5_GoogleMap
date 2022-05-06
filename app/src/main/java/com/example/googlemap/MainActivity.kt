@@ -1,17 +1,21 @@
 package com.example.googlemap
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.KeyEvent
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.googlemap.MapActivity.Companion.SEARCH_RESULT_EXTRA_KEY
 import com.example.googlemap.databinding.ActivityMainBinding
 import com.example.googlemap.model.LocationLatLngEntity
 import com.example.googlemap.model.SearchResultEntity
+import com.example.googlemap.response.search.Poi
 import com.example.googlemap.response.search.Pois
 import com.example.googlemap.response.search.SearchPoiInfo
 import com.example.googlemap.utility.RetrofitUtil
@@ -28,6 +32,9 @@ class MainActivity : AppCompatActivity(), CoroutineScope { // CoroutineScope구�
     lateinit var binding: ActivityMainBinding
     lateinit var adapter: SearchRecyclerAdapter
 
+    // 키보드 가릴 때 사용
+    lateinit var inputMethodManager: InputMethodManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -38,6 +45,8 @@ class MainActivity : AppCompatActivity(), CoroutineScope { // CoroutineScope구�
 
         initAdapter()
         initViews()
+        bindViews()
+        initData()
 
     }
 
@@ -46,6 +55,37 @@ class MainActivity : AppCompatActivity(), CoroutineScope { // CoroutineScope구�
         adapter = SearchRecyclerAdapter()
     }
 
+    private fun bindViews() = with(binding) {
+        searchButton.setOnClickListener {
+            searchKeyword(searchBarInputView.text.toString())
+
+            // 키보드 숨기기
+            hideKeyboard()
+        }
+
+        searchBarInputView.setOnKeyListener { v, keyCode, event ->
+            when (keyCode) {
+                KeyEvent.KEYCODE_ENTER -> {
+                    searchKeyword(searchBarInputView.text.toString())
+
+                    // 키보드 숨기기
+                    hideKeyboard()
+
+                    return@setOnKeyListener true
+                }
+            }
+            return@setOnKeyListener false
+        }
+    }
+
+    private fun hideKeyboard() {
+        if (::inputMethodManager.isInitialized.not()) {
+            inputMethodManager = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+        }
+        inputMethodManager.hideSoftInputFromWindow(binding.searchBarInputView.windowToken, 0)
+    }
+
+    // `with` scope function 사용
     // RecyclerView 무한 스크롤  구현
     private fun initViews() = with(binding) {
         emptyResultTextView.isVisible = false
@@ -74,6 +114,11 @@ class MainActivity : AppCompatActivity(), CoroutineScope { // CoroutineScope구�
             return
 
         searchWithPage(adapter.currentSearchString, adapter.currentPage + 1)
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    private fun initData() {
+        adapter.notifyDataSetChanged()
     }
 
     private fun setData(searchInfo: SearchPoiInfo, keywordString: String) {
@@ -107,6 +152,10 @@ class MainActivity : AppCompatActivity(), CoroutineScope { // CoroutineScope구�
         }
         adapter.currentPage = searchInfo.page.toInt()
         adapter.currentSearchString = keywordString
+    }
+
+    private fun searchKeyword(keywordString: String) {
+        searchWithPage(keywordString, 1)
     }
 
     // 검색 버튼이 눌리면 입력한 검색어를 바탕으로 검색을 실시
@@ -149,4 +198,21 @@ class MainActivity : AppCompatActivity(), CoroutineScope { // CoroutineScope구�
             }
         }
     }
+
+    private fun makeMainAddress(poi: Poi): String =
+        if (poi.secondNo?.trim().isNullOrEmpty()) {
+            (poi.upperAddrName?.trim() ?: "") + " " +
+                    (poi.middleAddrName?.trim() ?: "") + " " +
+                    (poi.lowerAddrName?.trim() ?: "") + " " +
+                    (poi.detailAddrName?.trim() ?: "") + " " +
+                    poi.firstNo?.trim()
+        } else {
+            (poi.upperAddrName?.trim() ?: "") + " " +
+                    (poi.middleAddrName?.trim() ?: "") + " " +
+                    (poi.lowerAddrName?.trim() ?: "") + " " +
+                    (poi.detailAddrName?.trim() ?: "") + " " +
+                    (poi.firstNo?.trim() ?: "") + " " +
+                    poi.secondNo?.trim()
+        }
+
 }
