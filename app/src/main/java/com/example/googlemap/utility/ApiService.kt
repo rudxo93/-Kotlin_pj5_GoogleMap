@@ -1,6 +1,8 @@
 package com.example.googlemap.utility
 
 import com.example.googlemap.Url
+import com.example.googlemap.response.address.AddressInfoResponse
+import com.example.googlemap.response.search.SearchResponse
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Header
