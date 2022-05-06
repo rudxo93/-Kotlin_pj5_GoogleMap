@@ -4,8 +4,11 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.core.view.isVisible
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.googlemap.databinding.ActivityMainBinding
 import com.example.googlemap.model.LocationLatLngEntity
 import com.example.googlemap.model.SearchResultEntity
@@ -27,7 +30,50 @@ class MainActivity : AppCompatActivity(), CoroutineScope { // CoroutineScope구�
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        val view = binding.root
+        setContentView(view)
+
+        job = Job()
+
+        initAdapter()
+        initViews()
+
+    }
+
+    // initAdapter 매서드 정의
+    private fun initAdapter() {
+        adapter = SearchRecyclerAdapter()
+    }
+
+    // RecyclerView 무한 스크롤  구현
+    private fun initViews() = with(binding) {
+        emptyResultTextView.isVisible = false
+        recyclerView.adapter = adapter
+
+        // 무한 스크롤 기능 구현
+        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                recyclerView.adapter ?: return
+
+                val lastVisibleItemPosition =
+                    (recyclerView.layoutManager as LinearLayoutManager).findLastVisibleItemPosition()
+                val totalItemCount = recyclerView.adapter!!.itemCount - 1
+
+                // 페이지 끝에 도달한 경우
+                if (!recyclerView.canScrollVertically(1) && lastVisibleItemPosition == totalItemCount) {
+                    loadNext()
+                }
+            }
+        })
+    }
+
+    private fun loadNext() {
+        if (binding.recyclerView.adapter?.itemCount == 0)
+            return
+
+        searchWithPage(adapter.currentSearchString, adapter.currentPage + 1)
     }
 
     private fun setData(searchInfo: SearchPoiInfo, keywordString: String) {
