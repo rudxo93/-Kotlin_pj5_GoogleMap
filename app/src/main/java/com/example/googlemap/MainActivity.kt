@@ -1,10 +1,16 @@
 package com.example.googlemap
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.core.view.isVisible
 import com.example.googlemap.databinding.ActivityMainBinding
+import com.example.googlemap.model.LocationLatLngEntity
+import com.example.googlemap.model.SearchResultEntity
+import com.example.googlemap.response.search.Pois
+import com.example.googlemap.response.search.SearchPoiInfo
 import com.example.googlemap.utility.RetrofitUtil
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
@@ -22,6 +28,39 @@ class MainActivity : AppCompatActivity(), CoroutineScope { // CoroutineScope구�
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+    }
+
+    private fun setData(searchInfo: SearchPoiInfo, keywordString: String) {
+
+        val pois: Pois = searchInfo.pois
+        // mocking data
+        val dataList = pois.poi.map {
+            SearchResultEntity(
+                name = it.name ?: "빌딩명 없음",
+                fullAddress = makeMainAddress(it),
+                locationLatLng = LocationLatLngEntity(
+                    it.noorLat,
+                    it.noorLon
+                )
+            )
+        }
+        // 어댑터에 데이터 리스트를 갱신해줄 때는 해당 아이템의 클릭리스너를 같이 지정하는데 이때 아이템 클릭 시
+        // 해당 데이터에 맞는 지도가 Map Activity에서 보여지도록 해당 위치 데이터 entity를 인텐트의 Extra에 넣어서 실행
+        adapter.setSearchResultList(dataList) {
+            Toast.makeText(
+                this,
+                "빌딩이름 : ${it.name}, 주소 : ${it.fullAddress} 위도/경도 : ${it.locationLatLng}",
+                Toast.LENGTH_SHORT
+            )
+                .show()
+
+            // map 액티비티 시작
+            startActivity(Intent(this, MapActivity::class.java).apply {
+                putExtra(SEARCH_RESULT_EXTRA_KEY, it)
+            })
+        }
+        adapter.currentPage = searchInfo.page.toInt()
+        adapter.currentSearchString = keywordString
     }
 
     // 검색 버튼이 눌리면 입력한 검색어를 바탕으로 검색을 실시
