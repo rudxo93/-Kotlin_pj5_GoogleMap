@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.googlemap.databinding.ViewholderSearchResultItemBinding
-import com.example.googlemap.entity.SearchResultEntity
+import com.example.googlemap.model.SearchResultEntity
 
 class SearchRecyclerAdapter : RecyclerView.Adapter<SearchRecyclerAdapter.SearchResultViewHolder>() {
 
@@ -61,7 +61,7 @@ class SearchRecyclerAdapter : RecyclerView.Adapter<SearchRecyclerAdapter.SearchR
         // 무한 스크롤 기능(기존리스트에 더해주도록 설정)
         this.searchResultList = this.searchResultList + searchResultList
         this.searchResultClickListener = searchResultClickListener
-        notifyDataSetChanged()
+        notifyDataSetChanged() // 데이터 변경시 데이터 변경을 알려주는 뷰를 업데이트 할 수 있도록
     }
 
     // 리스트 초기화 사용

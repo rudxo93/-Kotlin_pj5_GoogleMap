@@ -1,4 +1,4 @@
-package com.example.googlemap.entity
+package com.example.googlemap.model
 
 import android.os.Parcelable
 import kotlinx.android.parcel.Parcelize
