@@ -1,4 +1,5 @@
 package com.example.googlemap.response.address
 
-class AddressInfoResponse {
-}
+data class AddressInfoResponse(
+    val addressInfo: AddressInfo
+)
