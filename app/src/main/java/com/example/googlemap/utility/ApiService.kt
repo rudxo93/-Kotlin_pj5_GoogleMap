@@ -1,5 +1,6 @@
 package com.example.googlemap.utility
 
+import com.example.googlemap.Key
 import com.example.googlemap.Url
 import com.example.googlemap.response.address.AddressInfoResponse
 import com.example.googlemap.response.search.SearchResponse
@@ -28,7 +29,7 @@ interface ApiService {
 
     @GET(Url.GET_TMAP_REVERSE_GEO_CODE)
     suspend fun getReverseGeoCode(
-        @Header("appKey") appKey: String = Key,
+        @Header("appKey") appKey: String = Key.TMAP_API,
         @Query("version") version: Int = VERSION,
         @Query("callback") callback: String? = null,
         @Query("lat") lat: Double,
