@@ -1,4 +1,5 @@
 package com.example.googlemap.response.search
 
-class Pois {
-}
+data class Pois(
+    val poi: List<Poi>
+)

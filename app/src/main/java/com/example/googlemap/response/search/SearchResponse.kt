@@ -1,4 +1,5 @@
 package com.example.googlemap.response.search
 
-class SearchResponse {
-}
+data class SearchResponse(
+    val searchPoiInfo: SearchPoiInfo
+)
